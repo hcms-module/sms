@@ -163,7 +163,9 @@
                         ...this.form
                     }).then(res => {
                         if (res.status) {
-                            this.$message.error(res.msg)
+                            this.$message.success(res.msg)
+                            this.test_visible = false
+                            this.GetList()
                         }
                     })
                 },

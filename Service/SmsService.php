@@ -66,13 +66,11 @@ class SmsService
      * @param        $data
      * @param string $content
      * @return bool
-     * @throws \Overtrue\EasySms\Exceptions\InvalidArgumentException
-     * @throws ErrorException
+     * @throws \Throwable
      */
-    public function send($phone, $template, $data, string $content = '')
+    public function send($phone, $template, $data, string $content = ''): bool
     {
         $gateway = $this->sms_service->getSmsSetting('sms_platform_id', '');
-        var_dump($gateway);
         $send_record = new SmsSendRecord();
         $send_record->sms_platform_id = $gateway;
         $send_record->phone = $phone;
@@ -99,15 +97,12 @@ class SmsService
             }
         } catch (NoGatewayAvailableException $exceptions) {
             var_dump('NoGatewayAvailableException');
-            $exception = $exceptions->getException($gateway);
+            $exception = $exceptions->getExceptions()[0] ?? $exceptions;
+
             //执行错误
-            if ($exception) {
-                $send_record->result_status = 'failed';
-                $send_record->result_info = $exception->getMessage();
-                $res_exception = new ErrorException($exception->getMessage());
-            } else {
-                $res_exception = new ErrorException($exceptions->getMessage());
-            }
+            $send_record->result_status = 'failed';
+            $send_record->result_info = $exception->getMessage();
+            $res_exception = new ErrorException($exception->getMessage());
         } catch (\Throwable $throwable) {
             $send_record->result_status = 'failed';
             $send_record->result_info = $throwable->getMessage();
