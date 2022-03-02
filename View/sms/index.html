@@ -1,0 +1,196 @@
+<div class="page-container" v-cloak>
+    <el-card>
+        <div slot="header" class="breadcrumb">
+            <el-breadcrumb separator="/">
+                <el-breadcrumb-item>发送记录</el-breadcrumb-item>
+            </el-breadcrumb>
+        </div>
+        <div>
+            <el-form size="small" :inline="true">
+                <el-form-item>
+                    <el-input v-model="where.phone" clearable placeholder="接收手机"></el-input>
+                </el-form-item>
+                <el-form-item>
+                    <el-input v-model="where.template" clearable placeholder="模板"></el-input>
+                </el-form-item>
+                <el-form-item>
+                    <el-select v-model="where.result_status" placeholder="发送状态">
+                        <el-option label="全部状态" value=""></el-option>
+                        <el-option label="成功" value="success"></el-option>
+                        <el-option label="失败" value="failed"></el-option>
+                    </el-select>
+                </el-form-item>
+                <el-form-item>
+                    <el-button type="primary" @click="searchEvent">查询</el-button>
+                    <el-button type="default" @click="test_visible=true">测试</el-button>
+                </el-form-item>
+            </el-form>
+        </div>
+        <div>
+            <el-table
+                    size="small"
+                    :data="data_list"
+                    style="width: 100%">
+                <el-table-column
+                        fixed
+                        prop="record_id"
+                        label="ID"
+                        width="80">
+                </el-table-column>
+                <el-table-column
+                        prop="sms_platform_id"
+                        label="短信平台"
+                        min-width="100">
+                </el-table-column>
+                <el-table-column
+                        prop="phone"
+                        min-width="120"
+                        label="接收手机">
+                </el-table-column>
+                <el-table-column
+                        prop="template"
+                        min-width="120"
+                        label="消息模板">
+                </el-table-column>
+                <el-table-column
+                        prop="param_data"
+                        min-width="120"
+                        label="参数">
+                </el-table-column>
+                <el-table-column
+                        prop="result_status"
+                        min-width="100"
+                        label="状态">
+                    <template slot-scope="{row}">
+                        <div style="display: flex;">
+                            <div>
+                                <el-tag v-if="row.result_status=='success'" size="mini" type="success">
+                                    成功
+                                </el-tag>
+                                <el-tag v-else size="mini" type="danger">失败</el-tag>
+                            </div>
+                            <div>
+                                <el-popover
+                                        placement="bottom"
+                                        title="结果详情"
+                                        width="700"
+                                        trigger="click">
+                                    <div>
+                                        <pre style="white-space: pre-wrap;">{{row.result_info}}</pre>
+                                    </div>
+                                    <div slot="reference">
+                                        <i style="font-size: 14px;cursor: pointer;margin-left: 4px;"
+                                           class="el-icon-question"></i>
+                                    </div>
+                                </el-popover>
+                            </div>
+                        </div>
+                    </template>
+                </el-table-column>
+                <el-table-column
+                        prop="created_at"
+                        width="140"
+                        label="创建时间">
+                </el-table-column>
+                <el-table-column
+                        fixed="right"
+                        align="center"
+                        min-width="80"
+                        label="操作">
+                    <template slot-scope="{row}">
+                        <el-link @click="deleteEvent(row)">
+                            <el-button size="small" type="danger">删除</el-button>
+                        </el-link>
+                    </template>
+                </el-table-column>
+            </el-table>
+            <div class="pagination-container">
+                <el-pagination
+                        background
+                        layout="prev, pager, next"
+                        :total="total_num"
+                        :current-page="current_page"
+                        :page-size="per_page"
+                        @current-change="currentChangeEvent"
+                >
+                </el-pagination>
+            </div>
+        </div>
+    </el-card>
+
+    <el-dialog
+            title="发送短信测试"
+            :visible.sync="test_visible"
+            width="500px">
+        <div>
+            <el-form size="small" label-width="80px">
+                <el-form-item label="手机号码">
+                    <el-input v-model="form.phone"></el-input>
+                </el-form-item>
+                <el-form-item label="模板">
+                    <el-input v-model="form.template"></el-input>
+                </el-form-item>
+                <el-form-item label="参数">
+                    <el-input v-model="form.param_data"></el-input>
+                    <div class="form-small">
+                        <small>
+                            可以是对象或数组，例：阿里云是对象{code:'123'}，腾讯云是数组[1,2,3]
+                        </small>
+                    </div>
+                </el-form-item>
+            </el-form>
+        </div>
+        <div slot="footer" class="dialog-footer">
+            <el-button size="small" @click="test_visible = false">取 消</el-button>
+            <el-button size="small" type="primary" @click="submitTestEvent">确 定</el-button>
+        </div>
+    </el-dialog>
+</div>
+
+<script>
+    $(function () {
+        new Vue({
+            el: ".page-container",
+            data: {
+                is_init_list: true,
+                where: {},
+                test_visible: false,
+                form: {}
+            },
+            methods: {
+                submitTestEvent() {
+                    this.httpPost('{:url("sms/sms/index/test")}', {
+                        ...this.form
+                    }).then(res => {
+                        if (res.status) {
+                            this.$message.error(res.msg)
+                        }
+                    })
+                },
+                GetList() {
+                    this.httpGet('{:url("sms/sms/index/lists")}', {
+                        page: this.current_page,
+                        ...this.where
+                    }).then(res => {
+                        let {lists = {}} = res.data
+                        this.handRes(lists)
+                    })
+                },
+                deleteEvent({record_id}) {
+                    this.$confirm("是否确认删除该记录？", '提示').then(() => {
+                        this.httpPost("{:url('sms/sms/index/delete')}", {record_id}).then(res => {
+                            if (res.status) {
+                                this.$message.success(res.msg)
+                                this.GetList()
+                            }
+                        })
+                    })
+                },
+                searchEvent() {
+                    this.current_page = 1
+                    this.GetList()
+                }
+            }
+        })
+    })
+</script>

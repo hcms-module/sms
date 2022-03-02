@@ -1,0 +1,103 @@
+<div class="page-container" v-cloak>
+    <el-card>
+        <div slot="header" class="breadcrumb">
+            <el-breadcrumb separator="/">
+                <el-breadcrumb-item>短信配置</el-breadcrumb-item>
+            </el-breadcrumb>
+        </div>
+        <div>
+            <el-form size="small" label-width="140px">
+                <el-form-item label="短信平台">
+                    <div>
+                        <el-select v-model="sms_platform_id">
+                            <el-option v-for="(item,index) in platform_list" :value="item.platform_key"
+                                       :label="item.platform_name"></el-option>
+                        </el-select>
+                    </div>
+                </el-form-item>
+                <el-form-item v-for="(item,index) in platform.setting_keys" :key="index" :label="item">
+                    <el-input v-model="sms_platform_setting[item]" placeholder=""></el-input>
+                </el-form-item>
+                <el-form-item>
+                    <el-button @click="submitEvent" type="primary" size="small">
+                        提交
+                    </el-button>
+                </el-form-item>
+            </el-form>
+        </div>
+    </el-card>
+
+</div>
+<script>
+    $(function () {
+        new Vue({
+            el: ".page-container",
+            data: {
+                platform_list: [
+                    {
+                        platform_name: '阿里云',
+                        platform_key: 'aliyun',
+                        setting_keys: ['access_key_id', 'access_key_secret', 'sign_name']
+                    }, {
+                        platform_name: '腾讯云',
+                        platform_key: 'qcloud',
+                        setting_keys: ['sdk_app_id', 'secret_id', 'secret_key', 'sign_name']
+                    }, {
+                        platform_name: '七牛云',
+                        platform_key: 'qiniu',
+                        setting_keys: ['secret_key', 'access_key']
+                    }
+                ],
+                sms_platform_id: 'aliyun',
+                sms_platform_setting: {},
+            },
+            computed: {
+                platform() {
+                    let platform = this.platform_list.find(item => {
+                        return item.platform_key === this.sms_platform_id
+                    })
+                    if (platform) {
+                        return platform;
+                    }
+                    return {};
+                }
+            },
+            mounted() {
+                this.getInfo()
+            },
+            methods: {
+                /**
+                 * 获取编辑所需信息
+                 */
+                getInfo() {
+                    this.httpGet("{:url('sms/sms/setting/info')}", {
+                        ...this.getUrlQuery()
+                    }).then(res => {
+                        if (res.status) {
+                            let {sms_platform_id = '', sms_platform_setting = {}} = res.data.setting
+                            this.sms_platform_id = sms_platform_id
+                            this.sms_platform_setting = {...sms_platform_setting}
+                        }
+                    })
+                },
+                /**
+                 * 提交信息
+                 */
+                submitEvent() {
+                    console.log('submitEvent', this.sms_platform_setting)
+                    this.httpPost("{:url('sms/sms/setting')}", {
+                        sms_platform_id: this.sms_platform_id,
+                        sms_platform_setting: this.sms_platform_setting,
+                    }).then(res => {
+                        if (res.status) {
+                            this.$message.success(res.msg)
+                        }
+                    })
+                },
+            }
+        })
+    })
+</script>
+
+<style>
+</style>
