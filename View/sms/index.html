@@ -1,12 +1,14 @@
 <div class="page-container" v-cloak>
     <el-card>
-        <div slot="header" class="breadcrumb">
-            <el-breadcrumb separator="/">
-                <el-breadcrumb-item>发送记录</el-breadcrumb-item>
-            </el-breadcrumb>
-        </div>
+        <template #header>
+            <div class="breadcrumb">
+                <el-breadcrumb separator="/">
+                    <el-breadcrumb-item>发送记录</el-breadcrumb-item>
+                </el-breadcrumb>
+            </div>
+        </template>
         <div>
-            <el-form size="small" :inline="true">
+            <el-form :inline="true">
                 <el-form-item>
                     <el-input v-model="where.phone" clearable placeholder="接收手机"></el-input>
                 </el-form-item>
@@ -28,7 +30,7 @@
         </div>
         <div>
             <el-table
-                    size="small"
+
                     :data="data_list"
                     style="width: 100%">
                 <el-table-column
@@ -61,13 +63,13 @@
                         prop="result_status"
                         min-width="100"
                         label="状态">
-                    <template slot-scope="{row}">
+                    <template #default="{row}">
                         <div style="display: flex;">
                             <div>
-                                <el-tag v-if="row.result_status=='success'" size="mini" type="success">
+                                <el-tag v-if="row.result_status=='success'" type="success">
                                     成功
                                 </el-tag>
-                                <el-tag v-else size="mini" type="danger">失败</el-tag>
+                                <el-tag v-else type="danger">失败</el-tag>
                             </div>
                             <div>
                                 <el-popover
@@ -89,17 +91,17 @@
                 </el-table-column>
                 <el-table-column
                         prop="created_at"
-                        width="140"
+                        width="160"
                         label="创建时间">
                 </el-table-column>
                 <el-table-column
                         fixed="right"
                         align="center"
-                        min-width="80"
+                        min-width="90"
                         label="操作">
-                    <template slot-scope="{row}">
+                    <template #default="{row}">
                         <el-link @click="deleteEvent(row)">
-                            <el-button size="small" type="danger">删除</el-button>
+                            <el-button type="danger">删除</el-button>
                         </el-link>
                     </template>
                 </el-table-column>
@@ -120,10 +122,10 @@
 
     <el-dialog
             title="发送短信测试"
-            :visible.sync="test_visible"
+            v-model="test_visible"
             width="500px">
         <div>
-            <el-form size="small" label-width="80px">
+            <el-form label-width="80px">
                 <el-form-item label="手机号码">
                     <el-input v-model="form.phone"></el-input>
                 </el-form-item>
@@ -140,59 +142,61 @@
                 </el-form-item>
             </el-form>
         </div>
-        <div slot="footer" class="dialog-footer">
-            <el-button size="small" @click="test_visible = false">取 消</el-button>
-            <el-button size="small" type="primary" @click="submitTestEvent">确 定</el-button>
-        </div>
+        <template #footer>
+            <div class="dialog-footer">
+                <el-button @click="test_visible = false">取 消</el-button>
+                <el-button type="primary" @click="submitTestEvent">确 定</el-button>
+            </div>
+        </template>
     </el-dialog>
 </div>
 
 <script>
-    $(function () {
-        new Vue({
-            el: ".page-container",
-            data: {
+    const App = {
+        data() {
+            return {
                 is_init_list: true,
                 where: {},
                 test_visible: false,
                 form: {}
+            }
+        },
+        methods: {
+            submitTestEvent() {
+                this.httpPost('{:url("sms/sms/index/test")}', {
+                    ...this.form
+                }).then(res => {
+                    if (res.status) {
+                        this.$message.success(res.msg)
+                        this.test_visible = false
+                        this.GetList()
+                    }
+                })
             },
-            methods: {
-                submitTestEvent() {
-                    this.httpPost('{:url("sms/sms/index/test")}', {
-                        ...this.form
-                    }).then(res => {
+            GetList() {
+                this.httpGet('{:url("sms/sms/index/lists")}', {
+                    page: this.current_page,
+                    ...this.where
+                }).then(res => {
+                    let {lists = {}} = res.data
+                    this.handRes(lists)
+                })
+            },
+            deleteEvent({record_id}) {
+                this.$confirm("是否确认删除该记录？", '提示').then(() => {
+                    this.httpPost("{:url('sms/sms/index/delete')}", {record_id}).then(res => {
                         if (res.status) {
                             this.$message.success(res.msg)
-                            this.test_visible = false
                             this.GetList()
                         }
                     })
-                },
-                GetList() {
-                    this.httpGet('{:url("sms/sms/index/lists")}', {
-                        page: this.current_page,
-                        ...this.where
-                    }).then(res => {
-                        let {lists = {}} = res.data
-                        this.handRes(lists)
-                    })
-                },
-                deleteEvent({record_id}) {
-                    this.$confirm("是否确认删除该记录？", '提示').then(() => {
-                        this.httpPost("{:url('sms/sms/index/delete')}", {record_id}).then(res => {
-                            if (res.status) {
-                                this.$message.success(res.msg)
-                                this.GetList()
-                            }
-                        })
-                    })
-                },
-                searchEvent() {
-                    this.current_page = 1
-                    this.GetList()
-                }
+                }).catch(err => {
+                })
+            },
+            searchEvent() {
+                this.current_page = 1
+                this.GetList()
             }
-        })
-    })
+        }
+    }
 </script>

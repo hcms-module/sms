@@ -21,7 +21,7 @@ return [
         'params' => '',
         'sort' => 100,
         'is_menu' => 1,
-        'menu_icon' => 'el-icon-chat-line-square',
+        'menu_icon' => 'line-icon-pinglun_3',
         'children' => [
             [
                 'access_name' => '短信设置',
