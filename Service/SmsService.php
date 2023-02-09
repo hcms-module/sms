@@ -26,6 +26,7 @@ class SmsService
         $this->sms_service = $sms_service;
         $gateway = $sms_service->getSmsSetting('sms_platform_id', '');
         $sms_platform_setting = $sms_service->getSmsSetting('sms_platform_setting', []);
+        var_dump($sms_platform_setting);
         $config = [
             // HTTP 请求的超时时间（秒）
             'timeout' => 5.0,
@@ -98,7 +99,6 @@ class SmsService
         } catch (NoGatewayAvailableException $exceptions) {
             var_dump('NoGatewayAvailableException');
             $exception = $exceptions->getExceptions()[0] ?? $exceptions;
-
             //执行错误
             $send_record->result_status = 'failed';
             $send_record->result_info = $exception->getMessage();

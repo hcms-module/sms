@@ -123,7 +123,7 @@
     <el-dialog
             title="发送短信测试"
             v-model="test_visible"
-            width="500px">
+            width="540px">
         <div>
             <el-form label-width="80px">
                 <el-form-item label="手机号码">
@@ -136,7 +136,7 @@
                     <el-input v-model="form.param_data"></el-input>
                     <div class="form-small">
                         <small>
-                            可以是对象或数组，例：阿里云是对象{code:'123'}，腾讯云是数组[1,2,3]
+                            可以是对象或数组，例：阿里云是对象{"code":"123"}，腾讯云是数组[1,2,3]
                         </small>
                     </div>
                 </el-form-item>
@@ -163,7 +163,7 @@
         },
         methods: {
             submitTestEvent() {
-                this.httpPost('{:url("sms/sms/index/test")}', {
+                this.httpPost('{:url("sms/sms/test")}', {
                     ...this.form
                 }).then(res => {
                     if (res.status) {
@@ -174,7 +174,7 @@
                 })
             },
             GetList() {
-                this.httpGet('{:url("sms/sms/index/lists")}', {
+                this.httpGet('{:url("sms/sms/lists")}', {
                     page: this.current_page,
                     ...this.where
                 }).then(res => {
@@ -184,7 +184,7 @@
             },
             deleteEvent({record_id}) {
                 this.$confirm("是否确认删除该记录？", '提示').then(() => {
-                    this.httpPost("{:url('sms/sms/index/delete')}", {record_id}).then(res => {
+                    this.httpPost("{:url('sms/sms/delete')}", {record_id}).then(res => {
                         if (res.status) {
                             this.$message.success(res.msg)
                             this.GetList()
