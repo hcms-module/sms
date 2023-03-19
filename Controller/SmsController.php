@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace App\Application\Sms\Controller;
 
 use App\Annotation\View;
-use App\Application\Admin\Controller\AdminAbstractController;
-use App\Application\Admin\Lib\RenderParam;
 use App\Application\Admin\Middleware\AdminMiddleware;
 use App\Application\Sms\Model\SmsSendRecord;
 use App\Application\Sms\Service\SmsService;
 use App\Application\Sms\Service\SmsSettingService;
+use App\Controller\AbstractController;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\GetMapping;
@@ -18,26 +17,18 @@ use Hyperf\HttpServer\Annotation\Middleware;
 use Hyperf\HttpServer\Annotation\PostMapping;
 
 
-/**
- * @Middleware(AdminMiddleware::class)
- * @Controller(prefix="sms/sms")
- */
-class SmsController extends AdminAbstractController
+#[Middleware(AdminMiddleware::class)]
+#[Controller(prefix: "sms/sms")]
+class SmsController extends AbstractController
 {
 
-    /**
-     * @Inject()
-     */
+    #[Inject]
     protected SmsSettingService $sms_setting;
 
-    /**
-     * @Inject()
-     */
+    #[Inject]
     protected SmsService $sms_service;
 
-    /**
-     * @PostMapping(path="setting")
-     */
+    #[PostMapping("setting")]
     public function settingSave()
     {
         $validator = $this->validationFactory->make($this->request->all(), [
@@ -57,10 +48,7 @@ class SmsController extends AdminAbstractController
         return $res ? $this->returnSuccessJson() : $this->returnErrorJson();
     }
 
-
-    /**
-     * @GetMapping(path="setting/info")
-     */
+    #[GetMapping("setting/info")]
     public function settingInfo()
     {
         $setting = $this->sms_setting->getSmsSetting();
@@ -68,9 +56,7 @@ class SmsController extends AdminAbstractController
         return $this->returnSuccessJson(compact('setting'));
     }
 
-    /**
-     * @PostMapping(path="index/test")
-     */
+    #[PostMapping("test")]
     public function smsTest()
     {
         $validator = $this->validationFactory->make($this->request->all(), [
@@ -95,9 +81,7 @@ class SmsController extends AdminAbstractController
         return $res ? $this->returnSuccessJson() : $this->returnErrorJson();
     }
 
-    /**
-     * @PostMapping(path="index/delete")
-     */
+    #[PostMapping("delete")]
     public function recordDelete()
     {
         $record_id = (int)$this->request->input('record_id', 0);
@@ -109,9 +93,7 @@ class SmsController extends AdminAbstractController
         return $record->delete() ? $this->returnSuccessJson() : $this->returnErrorJson();
     }
 
-    /**
-     * @GetMapping(path="index/lists")
-     */
+    #[GetMapping("lists")]
     public function lists()
     {
         $where = [];
@@ -134,21 +116,15 @@ class SmsController extends AdminAbstractController
         return self::returnSuccessJson(compact('lists'));
     }
 
-    /**
-     * @View()
-     * @GetMapping(path="setting")
-     */
+    #[View]
+    #[GetMapping("setting")]
     public function setting()
     {
-        return RenderParam::display();
     }
 
-    /**
-     * @View()
-     * @GetMapping(path="index")
-     */
+    #[View]
+    #[GetMapping("")]
     public function index()
     {
-        return RenderParam::display();
     }
 }

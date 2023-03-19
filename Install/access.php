@@ -17,7 +17,7 @@ return [
     [
         'parent_access_id' => 0,
         'access_name' => '短信sms',
-        'uri' => 'sms/sms/none',
+        'uri' => 'sms/sms',
         'params' => '',
         'sort' => 100,
         'is_menu' => 1,
@@ -32,7 +32,7 @@ return [
             ],
             [
                 'access_name' => '发送记录',
-                'uri' => 'sms/sms/index',
+                'uri' => 'sms/sms',
                 'params' => '',
                 'sort' => 100,
                 'is_menu' => 1

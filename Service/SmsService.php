@@ -98,7 +98,6 @@ class SmsService
         } catch (NoGatewayAvailableException $exceptions) {
             var_dump('NoGatewayAvailableException');
             $exception = $exceptions->getExceptions()[0] ?? $exceptions;
-
             //执行错误
             $send_record->result_status = 'failed';
             $send_record->result_info = $exception->getMessage();

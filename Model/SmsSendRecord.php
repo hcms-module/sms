@@ -20,23 +20,23 @@ use Hyperf\DbConnection\Model\Model;
  */
 class SmsSendRecord extends Model
 {
-    protected $primaryKey = 'record_id';
+    protected string $primaryKey = 'record_id';
     /**
      * The table associated with the model.
      *
-     * @var string
+     * @var ?string
      */
-    protected $table = 'sms_send_record';
+    protected ?string $table = 'sms_send_record';
     /**
      * The attributes that are mass assignable.
      *
      * @var array
      */
-    protected $fillable = [];
+    protected array $fillable = [];
     /**
      * The attributes that should be cast to native types.
      *
      * @var array
      */
-    protected $casts = ['record_id' => 'integer', 'created_at' => 'datetime', 'updated_at' => 'datetime'];
+    protected array $casts = ['record_id' => 'integer', 'created_at' => 'datetime', 'updated_at' => 'datetime'];
 }
