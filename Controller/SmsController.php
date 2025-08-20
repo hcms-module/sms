@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Sms\Controller;
 
+use App\Annotation\Api;
 use App\Annotation\View;
 use App\Application\Admin\Middleware\AdminMiddleware;
 use App\Application\Sms\Model\SmsSendRecord;
@@ -13,11 +14,12 @@ use App\Controller\AbstractController;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\GetMapping;
-use Hyperf\HttpServer\Annotation\Middleware;
+use Hyperf\HttpServer\Annotation\Middlewares;
 use Hyperf\HttpServer\Annotation\PostMapping;
+use Hyperf\Session\Middleware\SessionMiddleware;
 
 
-#[Middleware(AdminMiddleware::class)]
+#[Middlewares([SessionMiddleware::class, AdminMiddleware::class])]
 #[Controller(prefix: "sms/sms")]
 class SmsController extends AbstractController
 {
@@ -56,6 +58,7 @@ class SmsController extends AbstractController
         return $this->returnSuccessJson(compact('setting'));
     }
 
+    #[Api]
     #[PostMapping("test")]
     public function smsTest()
     {
@@ -76,6 +79,7 @@ class SmsController extends AbstractController
         if (!is_array($param_data)) {
             return $this->returnErrorJson('参数格式错误');
         }
+
         $res = $this->sms_service->send($phone, $template, $param_data);
 
         return $res ? $this->returnSuccessJson() : $this->returnErrorJson();

@@ -11,6 +11,7 @@ namespace App\Application\Sms\Service;
 
 use App\Application\Sms\Model\SmsSendRecord;
 use App\Exception\ErrorException;
+use Hyperf\Codec\Json;
 use Overtrue\EasySms\EasySms;
 use Overtrue\EasySms\Exceptions\NoGatewayAvailableException;
 use Overtrue\EasySms\Strategies\OrderStrategy;
@@ -39,12 +40,11 @@ class SmsService
             // 可用的网关配置
             'gateways' => [
                 'errorlog' => [
-                    'file' => BASE_PATH . '/runtime/log/easy-sms.log',
+                    'file' => BASE_PATH . '/runtime/logs/easy-sms.log',
                 ],
                 $gateway => $sms_platform_setting,
             ],
         ];
-
         $this->easy_sms = new EasySms($config);
     }
 
@@ -76,7 +76,7 @@ class SmsService
         $send_record->phone = $phone;
         $send_record->template = $template;
         $send_record->content = $content;
-        $send_record->param_data = json_encode($data);
+        $send_record->param_data = Json::encode($data);
         $res_exception = null;
         try {
             $res = $this->easy_sms->send($phone, compact('template', 'content', 'data'));
@@ -84,20 +84,20 @@ class SmsService
                 $result_status = $res[$gateway]['status'] ?? "";
                 $result_info = $res[$gateway]['result'] ?? [];
                 $send_record->result_status = $result_status;
-                $send_record->result_info = is_array($result_info) ? json_encode($result_info) : $result_info;
+                $send_record->result_info = is_array($result_info) ? Json::encode($result_info) : $result_info;
                 if ($result_status !== 'success') {
                     //返回失败
                     $res_exception = new ErrorException('平台执行错误' . $send_record->result_info);
                 }
             } else {
                 $send_record->result_status = 'failed';
-                $send_record->result_info = is_array($res) ? json_encode($res) : $res;
+                $send_record->result_info = is_array($res) ? Json::encode($res) : $res;
                 //没有该平台返回结果
-                $res_exception = new ErrorException('短信配置信息错误' . json_encode($res));
+                $res_exception = new ErrorException('短信配置信息错误' . Json::encode($res));
             }
         } catch (NoGatewayAvailableException $exceptions) {
-            var_dump('NoGatewayAvailableException');
-            $exception = $exceptions->getExceptions()[0] ?? $exceptions;
+            $exception = $exceptions->getExceptions()[$gateway] ?? $exceptions;
+
             //执行错误
             $send_record->result_status = 'failed';
             $send_record->result_info = $exception->getMessage();

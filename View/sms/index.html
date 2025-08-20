@@ -73,6 +73,7 @@
                             </div>
                             <div>
                                 <el-popover
+                                        ref="popoverRef"
                                         placement="bottom"
                                         title="结果详情"
                                         width="700"
@@ -80,10 +81,10 @@
                                     <div>
                                         <pre style="white-space: pre-wrap;">{{row.result_info}}</pre>
                                     </div>
-                                    <div slot="reference">
+                                    <template #reference>
                                         <i style="font-size: 14px;cursor: pointer;margin-left: 4px;color: #999999;"
-                                           class="el-icon-question"></i>
-                                    </div>
+                                           class="iconfont line-icon-bangzhu"></i>
+                                    </template>
                                 </el-popover>
                             </div>
                         </div>
@@ -136,7 +137,7 @@
                     <el-input v-model="form.param_data"></el-input>
                     <div class="form-small">
                         <small>
-                            可以是对象或数组，例：阿里云是对象{"code":"123"}，腾讯云是数组[1,2,3]
+                            可以是对象或数组，例：阿里云是对象{"code":"1234"}，腾讯云是数组[1,2,3]
                         </small>
                     </div>
                 </el-form-item>
